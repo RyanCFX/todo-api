@@ -40,7 +40,9 @@ const entities = [
       entities,
       synchronize: false,
       logging: true,
-      ssl: true,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     }),
     UserModule,
     AuthModule,

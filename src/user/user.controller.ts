@@ -94,66 +94,6 @@ export class UserController {
     }
   }
 
-  @Get('statistics/annual')
-  @UseGuards(JwtAuthGuard)
-  async getAnnualUserCreation(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Query('roleId') roleId: string,
-  ) {
-    try {
-      const response = await this.userService.getAnnualUserCreation(roleId);
-
-      res.status(200).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json({ errors: error.errors });
-    }
-  }
-
-  @Get('statistics/monthly')
-  @UseGuards(JwtAuthGuard)
-  async getMonthlyUserCreation(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Query('roleId') roleId: string,
-  ) {
-    try {
-      const response = await this.userService.getMonthlyUserCreation(roleId);
-
-      res.status(200).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json({ errors: error.errors });
-    }
-  }
-
-  @Get('statistics/weekly')
-  @UseGuards(JwtAuthGuard)
-  async getWeeklyUserCreation(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Query('roleId') roleId: string,
-  ) {
-    try {
-      const response = await this.userService.getWeeklyUserCreation(roleId);
-
-      res.status(200).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json({ errors: error.errors });
-    }
-  }
-
-  @Get('statistics')
-  @UseGuards(JwtAuthGuard)
-  async getClientCounts(@Req() req: Request, @Res() res: Response) {
-    try {
-      const response = await this.userService.getClientCounts();
-
-      res.status(200).json(response);
-    } catch (error) {
-      return res.status(error.status || 500).json({ errors: error.errors });
-    }
-  }
-
   @Put('/:userId')
   @UseGuards(AdminGuard)
   async editUser(

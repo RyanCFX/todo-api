@@ -93,43 +93,45 @@ export class AuthService {
   // =====================================================
   // INICIAR SESION
   // =====================================================
-  async signin(values: SigninDto, origin: string) {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .where('UPPER(user.email) = UPPER(:email)', {
-        email: values.email,
-      })
-      .andWhere('user.status in (:...status)', { status: ['A', 'P'] })
-      .getOne();
+  async signin(values: SigninDto) {
+    try {
+      const user = await this.userRepository
+        .createQueryBuilder('user')
+        .where('UPPER(user.email) = UPPER(:email)', {
+          email: values.email,
+        })
+        .andWhere('user.status = :status', { status: 'A' })
+        .getOne();
 
-    // console.log(await this.userRepository.find());
+      // VALIDAR QUE EL USUARIO EXISTE
+      if (!user) {
+        throw {
+          errors: ['Usuario o contraseña incorrectac'],
+          status: 401,
+        };
+      }
 
-    // VALIDAR QUE EL USUARIO EXISTE
-    if (!user) {
-      throw {
-        errors: ['Usuario o contraseña incorrecta'],
-        status: 401,
+      // COMPARAR CONTRASEÑAS
+      if (!bcrypt.compareSync(values?.password, user?.password)) {
+        throw {
+          errors: ['Usuario o contraseña incorrecta'],
+          status: 400,
+        };
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...formatedUser } = user;
+      return {
+        user: formatedUser,
+        token: this.jwtService.sign({
+          password,
+          email: user?.email,
+          userId: user?.userId,
+        }),
       };
+    } catch (error) {
+      console.log(error);
     }
-
-    // COMPARAR CONTRASEÑAS
-    if (!bcrypt.compareSync(values?.password, user?.password)) {
-      throw {
-        errors: ['Usuario o contraseña incorrecta'],
-        status: 400,
-      };
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...formatedUser } = user;
-    return {
-      user: formatedUser,
-      token: this.jwtService.sign({
-        password,
-        email: user?.email,
-        userId: user?.userId,
-      }),
-    };
   }
 
   // =====================================================
@@ -152,8 +154,6 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...formatedUser } = user;
-
-    console.log(user);
 
     return {
       user: formatedUser,
@@ -294,8 +294,7 @@ export class AuthService {
         },
         {
           headers: {
-            'api-key':
-              process.env.MAIL_API_KEY,
+            'api-key': process.env.MAIL_API_KEY,
           },
         },
       );
@@ -644,4 +643,28 @@ export class AuthService {
       throw error;
     }
   }
+
+
+  async validateUser(email: string) {
+    const data = await this.userRepository
+      .createQueryBuilder('user')
+      .where('UPPER(user.email) = UPPER(:email)', {
+        email,
+        status: 'A',
+      })
+      .getOne();
+
+    // VALIDAR QUE EL USUARIO EXISTE
+    if (!data) {
+      return {
+        errors: ['Usuario o contraseña incorrecta'],
+        status: 404,
+      };
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...user } = data;
+
+    return this.jwtService.sign(user);
+  }
+
 }

@@ -122,10 +122,7 @@ export class AuthController {
       }
 
       // LLAMA AL SERVICIO DE AUTE`NTICACIÓN PARA INICIAR SESIÓN
-      const response = await this.authService.signin(
-        req.body,
-        req.headers.origin,
-      );
+      const response = await this.authService.signin(req.body);
 
       // ESTABLECE COOKIES CON EL TOKEN Y LOS DATOS DEL USUARIO
       res.cookie('token', response.token, {
@@ -144,7 +141,7 @@ export class AuthController {
       return res.status(200).json(response?.user);
     } catch (error) {
       console.log(error);
-      
+
       // MANAJA ERRORES Y RETORNA EL ESTADO CORRESPONDIENTE
       return res.status(error.status || 500).json({ errors: error.errors });
     }
